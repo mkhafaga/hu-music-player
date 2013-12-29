@@ -23,12 +23,12 @@ import com.xeeapps.utils.TimeFormatter;
  */
 public class PlayerActivity extends Activity implements
         SeekBar.OnSeekBarChangeListener, View.OnClickListener {
-    private MusicPlayerService musicPlayerService;
+    private MusicPlayerService service;
     private ImageButton playPauseButton, nextButton, previousButton,
             stopButton, repeatButton, shuffleButton;
     private int currentSongPosition;
-    private String currentRepeatState = Globals.REPEAT_NONE;
-    private String currentShuffleState = Globals.SHUFFLE_OFF;
+  //  private String currentRepeatState = Globals.REPEAT_NONE;
+  //  private String currentShuffleState = Globals.SHUFFLE_OFF;
     private Handler handler = new Handler();
     private SeekBar progressBar;
     //	private Cursor songsCursor;
@@ -51,7 +51,7 @@ public class PlayerActivity extends Activity implements
         public void onReceive(Context context, Intent intent) {
 //            Toast.makeText(context, "Intent Detected.", Toast.LENGTH_LONG).show();
             playPauseButton.setImageResource(R.drawable.playerplay);
-            titleView.setText(musicPlayerService.getCurrentSongDetails().getSongTitle());
+            titleView.setText(service.getCurrentSongDetails().getSongTitle());
         }
     }       ;
 //    public class MyReceiver extends BroadcastReceiver {
@@ -70,17 +70,17 @@ public class PlayerActivity extends Activity implements
     private Runnable uiUpdater = new Runnable() {
 
         public void run() {
-//            if (musicPlayerService.getCurrentPosition() == 0) {
+//            if (service.getCurrentPosition() == 0) {
 //                playPauseButton.setImageResource(R.drawable.playerplay);
 //              //  updateLyricsView();
 //            }
 
             Log.i("updating GUI", "done");
-            //    if(musicPlayerService.getStatus().equals("running")){
-            progressBar.setMax(musicPlayerService.getDuration());
-            progressBar.setProgress(musicPlayerService.getCurrentPosition());
-            leftDurationLbl.setText(TimeFormatter.toHoursAndMinutesAndSeconds(musicPlayerService.getDuration() - musicPlayerService.getCurrentPosition()));
-            playedDurationLbl.setText(TimeFormatter.toHoursAndMinutesAndSeconds(musicPlayerService.getCurrentPosition()));
+            //    if(service.getStatus().equals("running")){
+            progressBar.setMax(service.getDuration());
+            progressBar.setProgress(service.getCurrentPosition());
+            leftDurationLbl.setText(TimeFormatter.toHoursAndMinutesAndSeconds(service.getDuration() - service.getCurrentPosition()));
+            playedDurationLbl.setText(TimeFormatter.toHoursAndMinutesAndSeconds(service.getCurrentPosition()));
             //   }
 
 
@@ -91,7 +91,9 @@ public class PlayerActivity extends Activity implements
         @Override
         public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
             MusicPlayerService.MusicPlayerBinder binder = (MusicPlayerService.MusicPlayerBinder) iBinder;
-            musicPlayerService = binder.getService();
+            service = binder.getService();
+            updateRepeatButton();
+            updateShuffleButton();
             updateProgressBar();
             updateLyricsView();
         }
@@ -115,6 +117,13 @@ public class PlayerActivity extends Activity implements
             currentSongIndex /*= Globals.CURRENT_SONG_INDEX */ = bundle.getInt("currentSongIndex");
         }
         setContentView(R.layout.player);
+        serviceIntent = new Intent(this, MusicPlayerService.class);
+        serviceIntent.putExtra("song", getCurrentSongDetails().getSongData());
+        serviceIntent.putExtra("currentSongDetails", getCurrentSongDetails());
+        serviceIntent.putExtra("currentSongIndex", currentSongIndex);
+        serviceIntent.putExtra("songDetailsList", songDetailsList);
+        startService(serviceIntent);
+        bindService(serviceIntent, mConnection, Context.BIND_NOT_FOREGROUND);
 //        currentRepeatState =  Globals.CURRENT_REPEAT_STATE;
 //        currentShuffleState = Globals.CURRENT_SHUFFLE_STATE;
 
@@ -122,19 +131,7 @@ public class PlayerActivity extends Activity implements
         playPauseButton = (ImageButton) findViewById(R.id.playPauseButton);
         shuffleButton = (ImageButton) findViewById(R.id.shuffleButton);
         repeatButton = (ImageButton) findViewById(R.id.repeatButton);
-        if (currentRepeatState.equals(Globals.REPEAT_ALL)) {
-            repeatButton.setImageResource(R.drawable.repeatall);
-        } else if (currentRepeatState.equals(Globals.REPEAT_CURRENT)) {
-            repeatButton.setImageResource(R.drawable.repeatcurrent);
-        } else {
-            repeatButton.setImageResource(R.drawable.repeatnone);
-        }
 
-        if (currentShuffleState.equals(Globals.SHUFFLE_ON)) {
-            shuffleButton.setImageResource(R.drawable.shuffleon);
-        } else {
-            shuffleButton.setImageResource(R.drawable.shuffleoff);
-        }
         lyricsView = (WebView) findViewById(R.id.webView);
         Drawable background = Drawable.createFromPath(albumArtPath);
         lyricsView.setBackgroundColor(0);
@@ -146,21 +143,35 @@ public class PlayerActivity extends Activity implements
         progressBar.setOnSeekBarChangeListener(this);
         leftDurationLbl = (TextView) findViewById(R.id.leftDurationLbl);
         playedDurationLbl = (TextView) findViewById(R.id.playedDurationLbl);
-        serviceIntent = new Intent(this, MusicPlayerService.class);
-        serviceIntent.putExtra("song", getCurrentSongDetails().getSongData());
-        serviceIntent.putExtra("currentSongDetails", getCurrentSongDetails());
-        serviceIntent.putExtra("currentSongIndex", currentSongIndex);
-        serviceIntent.putExtra("songDetailsList", songDetailsList);
-        startService(serviceIntent);
-        bindService(serviceIntent, mConnection, Context.BIND_NOT_FOREGROUND);
+
 
         //     updateProgressBar();
 
         nextButton.setOnClickListener(this);
         previousButton.setOnClickListener(this);
         playPauseButton.setOnClickListener(this);
+        shuffleButton.setOnClickListener(this);
+        repeatButton.setOnClickListener(this);
         IntentFilter intentFilter = new IntentFilter("accomplished") ;
         registerReceiver(accomplishedBroadcastReceiver,intentFilter);
+    }
+
+    private void updateShuffleButton() {
+        if (service.getShuffleState().equals(Globals.SHUFFLE_ON)) {
+            shuffleButton.setImageResource(R.drawable.shuffleon);
+        } else {
+            shuffleButton.setImageResource(R.drawable.shuffleoff);
+        }
+    }
+
+    private void updateRepeatButton() {
+        if (service.getRepeatState().equals(Globals.REPEAT_ALL)) {
+            repeatButton.setImageResource(R.drawable.repeatall);
+        } else if (service.getRepeatState().equals(Globals.REPEAT_CURRENT)) {
+            repeatButton.setImageResource(R.drawable.repeatcurrent);
+        } else {
+            repeatButton.setImageResource(R.drawable.repeatnone);
+        }
     }
 
     public void onProgressChanged(SeekBar seekBar, int progress,
@@ -177,7 +188,7 @@ public class PlayerActivity extends Activity implements
     public void onStopTrackingTouch(SeekBar seekBar) {
         handler.removeCallbacks(uiUpdater);
         currentSongPosition = progressBar.getProgress();
-        musicPlayerService.seekTo(currentSongPosition);
+        service.seekTo(currentSongPosition);
         //player.seekTo(currentSongPosition);
         updateProgressBar();
 
@@ -247,7 +258,7 @@ public class PlayerActivity extends Activity implements
 //            Log.i("song - artist", songName + " - " + artistName);
 //            Log.i("link", "http://hulyrics.com/LyricsService/webresources/service/getLyricBySongCriteria?title=" + songName + "&artistName=" + artistName);
 //            Log.i("artist:");
-           new GetLyricsTask(lyricsView).execute(musicPlayerService.getCurrentSongDetails());
+           new GetLyricsTask(lyricsView).execute(service.getCurrentSongDetails());
          //   lyricsWords = new GetLyricsTask().execute(songName, artistName).get();
 
         //    lyricsView.loadDataWithBaseURL(null, lyricsWords, "text/html", "UTF-8", null);
@@ -263,20 +274,20 @@ public class PlayerActivity extends Activity implements
         ImageButton button = (ImageButton) view;
         if (button.getId() == R.id.playPauseButton) {
 
-            if (musicPlayerService.getSongState().equals(Globals.PAUSED_SONG)) {
+            if (service.getSongState().equals(Globals.PAUSED_SONG)) {
 
                 playPauseButton
                         .setImageResource(R.drawable.playerpause);
-                musicPlayerService.resume(musicPlayerService.getCurrentPosition());
+                service.resume(service.getCurrentPosition());
              //   songState = Globals.RUNNING_SONG;
-            } else if (musicPlayerService.getSongState().equals(Globals.RUNNING_SONG)) {
+            } else if (service.getSongState().equals(Globals.RUNNING_SONG)) {
                 playPauseButton
                         .setImageResource(R.drawable.playerplay);
 
-                currentSongPosition = musicPlayerService.getCurrentPosition();
+                currentSongPosition = service.getCurrentPosition();
 //                unbindService(mConnection);
 //                stopService(serviceIntent);
-                musicPlayerService.pause();
+                service.pause();
             //    songState = Globals.PAUSED_SONG;
             } else {
                 playPauseButton
@@ -289,7 +300,7 @@ public class PlayerActivity extends Activity implements
 //                serviceIntent.putExtra("songDetailsList", songDetailsList);
 //                startService(serviceIntent);
 //                bindService(serviceIntent, mConnection, Context.BIND_NOT_FOREGROUND);
-               musicPlayerService.playSong();
+               service.playSong();
            //     songState = Globals.RUNNING_SONG;
 
 
@@ -297,20 +308,49 @@ public class PlayerActivity extends Activity implements
 
 
         } else if (button.getId() == R.id.previousButton) {
-            musicPlayerService.back();
+            service.back();
             playPauseButton.setImageResource(R.drawable.playerpause);
         //    songState = Globals.RUNNING_SONG;
-            musicPlayerService.setSongState(Globals.RUNNING_SONG);
-            titleView.setText(musicPlayerService.getCurrentSongDetails().getSongTitle());
+            service.setSongState(Globals.RUNNING_SONG);
+            titleView.setText(service.getCurrentSongDetails().getSongTitle());
             updateLyricsView();
         } else if (button.getId() == R.id.nextButton) {
-            musicPlayerService.next();
+            service.next();
             playPauseButton.setImageResource(R.drawable.playerpause);
           //  songState = Globals.RUNNING_SONG;
-            musicPlayerService.setSongState(Globals.RUNNING_SONG);
-            titleView.setText(musicPlayerService.getCurrentSongDetails().getSongTitle());
+            service.setSongState(Globals.RUNNING_SONG);
+            titleView.setText(service.getCurrentSongDetails().getSongTitle());
                  updateLyricsView();
 
+        }  else if(button.getId()==R.id.repeatButton){
+            if(service.getRepeatState().equals(Globals.REPEAT_NONE)){
+                service.setRepeatState(Globals.REPEAT_CURRENT);
+                service.setShuffleState(Globals.SHUFFLE_OFF);
+                shuffleButton.setImageResource(R.drawable.shuffleoff);
+                repeatButton.setImageResource(R.drawable.repeatcurrent);
+                service.setLooping(true);
+
+            } else if(service.getRepeatState().equals(Globals.REPEAT_CURRENT)){
+                service.setLooping(false);
+                service.setRepeatState( Globals.REPEAT_ALL);
+                repeatButton.setImageResource(R.drawable.repeatall);
+            } else{
+                service.setLooping(false);
+               service.setRepeatState(Globals.REPEAT_NONE);
+                repeatButton.setImageResource(R.drawable.repeatnone);
+                service.setShuffleState(Globals.SHUFFLE_OFF);
+                shuffleButton.setImageResource(R.drawable.shuffleoff);
+            }
+        }else{
+            if(service.getShuffleState().equals(Globals.SHUFFLE_OFF)){
+                service.setShuffleState(Globals.SHUFFLE_ON) ;
+                shuffleButton.setImageResource(R.drawable.shuffleon);
+                repeatButton.setImageResource(R.drawable.repeatall);
+                service.setRepeatState(Globals.REPEAT_ALL);
+            }else{
+                service.setShuffleState(Globals.SHUFFLE_OFF);
+                shuffleButton.setImageResource(R.drawable.shuffleoff);
+            }
         }
     }
 
