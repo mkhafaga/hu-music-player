@@ -310,7 +310,7 @@ public class PlayerActivity extends Activity implements
         } else if (button.getId() == R.id.previousButton) {
             service.back();
             playPauseButton.setImageResource(R.drawable.playerpause);
-        //    songState = Globals.RUNNING_SONG;
+
             service.setSongState(Globals.RUNNING_SONG);
             titleView.setText(service.getCurrentSongDetails().getSongTitle());
             updateLyricsView();
