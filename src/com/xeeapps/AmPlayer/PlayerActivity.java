@@ -301,7 +301,7 @@ public class PlayerActivity extends Activity implements
 //                startService(serviceIntent);
 //                bindService(serviceIntent, mConnection, Context.BIND_NOT_FOREGROUND);
                service.playSong();
-           //     songState = Globals.RUNNING_SONG;
+
 
 
             }
