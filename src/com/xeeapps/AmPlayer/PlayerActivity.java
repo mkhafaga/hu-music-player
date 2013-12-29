@@ -17,8 +17,6 @@ import com.xeeapps.service.SongDetails;
 import com.xeeapps.utils.GetLyricsTask;
 import com.xeeapps.utils.TimeFormatter;
 
-import java.util.concurrent.ExecutionException;
-
 /**
  * Created with IntelliJ IDEA. User: khafaga Date: 11/09/12 Time: 05:17 م To
  * change this template use File | Settings | File Templates.
@@ -38,7 +36,7 @@ public class PlayerActivity extends Activity implements
     private TextView leftDurationLbl, playedDurationLbl;
     private WebView lyricsView;
     private TextView titleView;
-    private String lyricsWords;
+    private String lyricsWords="";
     private Intent serviceIntent;
     //    private int shuffleCounter;
     private Bundle bundle;
@@ -95,6 +93,7 @@ public class PlayerActivity extends Activity implements
             MusicPlayerService.MusicPlayerBinder binder = (MusicPlayerService.MusicPlayerBinder) iBinder;
             musicPlayerService = binder.getService();
             updateProgressBar();
+            updateLyricsView();
         }
 
         @Override
@@ -154,6 +153,7 @@ public class PlayerActivity extends Activity implements
         serviceIntent.putExtra("songDetailsList", songDetailsList);
         startService(serviceIntent);
         bindService(serviceIntent, mConnection, Context.BIND_NOT_FOREGROUND);
+
         //     updateProgressBar();
 
         nextButton.setOnClickListener(this);
@@ -242,31 +242,18 @@ public class PlayerActivity extends Activity implements
     public boolean updateLyricsView() {
 
         lyricsWords = "Some Error";
-        try {
-            String[] songSlices = getCurrentSongDetails().getSongData().split("/");
-            String artistName = getCurrentSongDetails().getArtistName().trim();
-            String songName = songSlices[songSlices.length - 1].replace(".mp3", "").replace(artistName, "").replaceAll("(.-)*[0-9]*", "").trim();
-            Log.i("song - artist", songName + " - " + artistName);
-            Log.i("link", "http://hulyrics.com/LyricsService/webresources/service/getLyricBySongCriteria?title=" + songName + "&artistName=" + artistName);
+
+
+//            Log.i("song - artist", songName + " - " + artistName);
+//            Log.i("link", "http://hulyrics.com/LyricsService/webresources/service/getLyricBySongCriteria?title=" + songName + "&artistName=" + artistName);
 //            Log.i("artist:");
-            lyricsWords = new GetLyricsTask().execute(songName, artistName).get();
-            if (lyricsWords == null) lyricsWords = "";
-            lyricsWords = "<body style=' -webkit-text-stroke: 1px black;\n" +
-                    "   color: white;\n" +
-                    "   text-shadow:\n" +
-                    "       3px 3px 0 #000,\n" +
-                    "     -1px -1px 0 #000,  \n" +
-                    "      1px -1px 0 #000,\n" +
-                    "      -1px 1px 0 #000,\n" +
-                    "       1px 1px 0 #000;;font-weight:bolder;'>" + lyricsWords + "</body>";
-            lyricsView.loadDataWithBaseURL(null, lyricsWords, "text/html", "UTF-8", null);
-            Log.i("words", lyricsWords);
+           new GetLyricsTask(lyricsView).execute(musicPlayerService.getCurrentSongDetails());
+         //   lyricsWords = new GetLyricsTask().execute(songName, artistName).get();
+
+        //    lyricsView.loadDataWithBaseURL(null, lyricsWords, "text/html", "UTF-8", null);
+        //    Log.i("words", lyricsWords);
 //            Log.i("the lyric:",lyricsWords);
-        } catch (InterruptedException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        } catch (ExecutionException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        }
+
         return true;
     }
 
@@ -294,7 +281,15 @@ public class PlayerActivity extends Activity implements
             } else {
                 playPauseButton
                         .setImageResource(R.drawable.playerpause);
-                musicPlayerService.playSong();
+//                serviceIntent = new Intent(this, MusicPlayerService.class);
+//                currentSongDetails = (SongDetails) songDetailsList[0];
+//                serviceIntent.putExtra("song", currentSongDetails.getSongData());
+//                serviceIntent.putExtra("currentSongDetails", currentSongDetails);
+//                serviceIntent.putExtra("currentSongIndex", 0);
+//                serviceIntent.putExtra("songDetailsList", songDetailsList);
+//                startService(serviceIntent);
+//                bindService(serviceIntent, mConnection, Context.BIND_NOT_FOREGROUND);
+               musicPlayerService.playSong();
            //     songState = Globals.RUNNING_SONG;
 
 
@@ -307,13 +302,14 @@ public class PlayerActivity extends Activity implements
         //    songState = Globals.RUNNING_SONG;
             musicPlayerService.setSongState(Globals.RUNNING_SONG);
             titleView.setText(musicPlayerService.getCurrentSongDetails().getSongTitle());
+            updateLyricsView();
         } else if (button.getId() == R.id.nextButton) {
             musicPlayerService.next();
             playPauseButton.setImageResource(R.drawable.playerpause);
           //  songState = Globals.RUNNING_SONG;
             musicPlayerService.setSongState(Globals.RUNNING_SONG);
             titleView.setText(musicPlayerService.getCurrentSongDetails().getSongTitle());
-            //     updateLyricsView();
+                 updateLyricsView();
 
         }
     }
