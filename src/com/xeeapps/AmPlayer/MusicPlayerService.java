@@ -166,6 +166,9 @@ public class MusicPlayerService extends Service implements MediaPlayer.OnComplet
                 Intent accomplishedIntent = new Intent();
                 accomplishedIntent.setAction("accomplished");
                 sendBroadcast(accomplishedIntent);
+                setCurrentSongDetails((SongDetails) songDetailsList[0]);
+
+             //   stopSelf();
 //                updateProgressBar();
 //                updateLyricsView();
             }
@@ -220,7 +223,7 @@ public class MusicPlayerService extends Service implements MediaPlayer.OnComplet
                     player.setDataSource(currentSongDetails.getSongData());
                     player.prepare();
                     player.start();
-
+                      setSongState(Globals.RUNNING_SONG);
 
 
                 } catch (Exception e) {
