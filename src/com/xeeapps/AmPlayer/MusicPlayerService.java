@@ -7,7 +7,6 @@ import android.content.Intent;
 import android.media.MediaPlayer;
 import android.os.Binder;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
 import com.xeeapps.service.SongDetails;
@@ -27,24 +26,20 @@ public class MusicPlayerService extends Service implements MediaPlayer.OnComplet
     private final Binder binder =  new MusicPlayerBinder();
     private Object[] songDetailsList;
     private int currentSongIndex;
-    private String currentRepeatState =Globals.REPEAT_NONE;
+   // private String currentRepeatState =Globals.REPEAT_NONE;
     private String songState=Globals.RUNNING_SONG;
-    private String currentShuffleState =  Globals.SHUFFLE_OFF;
-    private int currentPosition;
-    private int duration;
-    private Handler handler = new Handler();
+    private String shuffleState =  Globals.SHUFFLE_OFF;
+    private String repeatState = Globals.REPEAT_NONE;
+
+
+
 
     private SongDetails currentSongDetails;
-    //private  String status;
-//    private TextView
-//    titleView ;
- //   private Thread playerThread;
-    private Runnable playerRunnable = new Runnable() {
-        @Override
-        public void run() {
 
-        }
-    }    ;
+
+    public void setLooping(boolean looping){
+        player.setLooping(looping);
+    }
 
     public int getCurrentPosition() {
 
@@ -75,6 +70,22 @@ public class MusicPlayerService extends Service implements MediaPlayer.OnComplet
         this.currentSongDetails = currentSongDetails;
     }
 
+    public String getRepeatState() {
+        return repeatState;
+    }
+
+    public void setRepeatState(String repeatState) {
+        this.repeatState = repeatState;
+    }
+
+    public String getShuffleState() {
+        return shuffleState;
+    }
+
+    public void setShuffleState(String shuffleState) {
+        this.shuffleState = shuffleState;
+    }
+
 //    public String getStatus() {
 //        return status;
 //    }
@@ -97,8 +108,8 @@ public class MusicPlayerService extends Service implements MediaPlayer.OnComplet
         player.setOnCompletionListener(this);
         Bundle bundle = intent.getExtras();
         if (bundle!=null){
-            String song  =  bundle.getString("song");
-          //  albumArtPath  = Globals.ALBUM_ART_PATH = bundle.getString("albumArtPath");
+
+
 
             songDetailsList = (Object[]) bundle.getSerializable("songDetailsList");
             setCurrentSongDetails((SongDetails) bundle.get("currentSongDetails"));
@@ -140,7 +151,7 @@ public class MusicPlayerService extends Service implements MediaPlayer.OnComplet
         Log.i("does it come here???", "yes");
        // if (songDetailsList==null) songDetailsList = Globals.SONG_DETAILS_LIST;
        // currentSongIndex =  Globals.CURRENT_SONG_INDEX;
-        if(currentRepeatState.equals(Globals.REPEAT_NONE)){
+        if(repeatState.equals(Globals.REPEAT_NONE)){
 
 
             if(currentSongIndex <songDetailsList.length-1){
@@ -174,8 +185,8 @@ public class MusicPlayerService extends Service implements MediaPlayer.OnComplet
             }
 
         }else{
-            if(currentRepeatState.equals(Globals.REPEAT_ALL)){
-                if(currentShuffleState.equals(Globals.SHUFFLE_OFF)){
+            if(repeatState.equals(Globals.REPEAT_ALL)){
+                if(getShuffleState().equals(Globals.SHUFFLE_OFF)){
                     if(currentSongIndex <songDetailsList.length-1){
                         currentSongIndex++;
                     }else{
