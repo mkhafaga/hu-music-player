@@ -19,7 +19,7 @@ import java.util.Random;
  * User: Khafaga
  * Date: 21/12/13
  * Time: 11:50 م
- * To change this template use File | Settings | File Templates.
+ *
  */
 public class MusicPlayerService extends Service implements MediaPlayer.OnCompletionListener {
     private MediaPlayer player = MediaPlayerFactory.getMediaPlayer();
