@@ -26,7 +26,7 @@ public class MusicPlayerService extends Service implements MediaPlayer.OnComplet
     private final Binder binder =  new MusicPlayerBinder();
     private Object[] songDetailsList;
     private int currentSongIndex;
-   // private String currentRepeatState =Globals.REPEAT_NONE;
+
     private String songState=Globals.RUNNING_SONG;
     private String shuffleState =  Globals.SHUFFLE_OFF;
     private String repeatState = Globals.REPEAT_NONE;
