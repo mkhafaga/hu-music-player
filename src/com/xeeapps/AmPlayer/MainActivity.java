@@ -31,7 +31,9 @@ public class MainActivity extends TabActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if(item.getItemId()==R.id.bringPlayer){
+
             Intent playerIntent = new Intent(this,PlayerActivity.class) ;
+            playerIntent.setAction("recover");
 //            playerIntent.putExtra("albumArtPath", Globals.ALBUM_ART_PATH) ;    // songsCursor.getPosition()
 //            playerIntent.putExtra("currentSongDetails", Globals.CURRENT_SONG_DETAILS);
 //            playerIntent.putExtra("currentSongIndex",Globals.CURRENT_SONG_INDEX);
