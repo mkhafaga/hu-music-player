@@ -106,6 +106,7 @@ public class PlayerActivity extends Activity implements
 
     public void onCreate(Bundle savedInstanceState) {
 
+
         super.onCreate(savedInstanceState);
 
         bundle = getIntent().getExtras();
@@ -117,12 +118,16 @@ public class PlayerActivity extends Activity implements
             currentSongIndex /*= Globals.CURRENT_SONG_INDEX */ = bundle.getInt("currentSongIndex");
         }
         setContentView(R.layout.player);
+
         serviceIntent = new Intent(this, MusicPlayerService.class);
-        serviceIntent.putExtra("song", getCurrentSongDetails().getSongData());
-        serviceIntent.putExtra("currentSongDetails", getCurrentSongDetails());
-        serviceIntent.putExtra("currentSongIndex", currentSongIndex);
-        serviceIntent.putExtra("songDetailsList", songDetailsList);
-        startService(serviceIntent);
+        if(!getIntent().getAction().equals("recover")){
+            serviceIntent.putExtra("song", getCurrentSongDetails().getSongData());
+            serviceIntent.putExtra("currentSongDetails", getCurrentSongDetails());
+            serviceIntent.putExtra("currentSongIndex", currentSongIndex);
+            serviceIntent.putExtra("songDetailsList", songDetailsList);
+            startService(serviceIntent);
+        }
+
         bindService(serviceIntent, mConnection, Context.BIND_NOT_FOREGROUND);
 //        currentRepeatState =  Globals.CURRENT_REPEAT_STATE;
 //        currentShuffleState = Globals.CURRENT_SHUFFLE_STATE;
