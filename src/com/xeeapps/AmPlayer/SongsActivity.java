@@ -9,9 +9,7 @@ import android.provider.MediaStore;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.EditText;
-import android.widget.ListView;
+import android.widget.*;
 import com.xeeapps.mappers.Mapper;
 import com.xeeapps.service.SongDetails;
 
@@ -107,13 +105,26 @@ public class SongsActivity extends ListActivity {
 					int i, long l) {
                      Mapper song = (Mapper) songsView.getItemAtPosition(i);
 				songsCursor.moveToPosition(song.getId());
-				
+                int childrenCount  =  songsView.getCount();
+                for(int j=0;j<childrenCount;j++){
+                    LinearLayout layout = (LinearLayout) songsView.getChildAt(j);
+                    ImageView imageView  = (ImageView) layout.findViewById(R.id.marked);
+                    if(i==j){
+                        imageView.setImageResource(R.drawable.marked);
+                    }else{
+                        imageView.setImageBitmap(null);
+                    }
+
+
+                }
+
 //				Globals.CURRENT_SONG = songsCursor.getString(1);
 //				Globals.SONG_STATE = Globals.RUNNING_SONG;
 //				Globals.CURRENT_CURSOR = songsCursor;
 				Log.i("view class", view.getClass() + "");
 				Intent playerIntent = new Intent(getApplicationContext(),
 						PlayerActivity.class);
+                playerIntent.setAction("start");
 
                 playerIntent.putExtra("albumArtPath",albumArtPath) ;    // songsCursor.getPosition()
 
