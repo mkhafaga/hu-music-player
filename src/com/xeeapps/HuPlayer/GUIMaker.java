@@ -1,4 +1,4 @@
-package com.xeeapps.AmPlayer;
+package com.xeeapps.HuPlayer;
 
 import android.app.ListActivity;
 import android.database.Cursor;
@@ -19,7 +19,7 @@ import java.util.ArrayList;
 public class GUIMaker {
 
 	private Cursor cursor;
-	private ArrayList<String> rowsValues = new ArrayList<String>();
+	private ArrayList<Mapper> rowsValues = new ArrayList<Mapper>();
 	private ArrayAdapter<Mapper> listAdapter;
 
 
@@ -41,6 +41,7 @@ public class GUIMaker {
 			cursor.moveToPosition(i);
 			Mapper currentValue =new Mapper( cursor.getString(0),i);
 		//	if (getRowsValues().indexOf(currentValue) == -1) {
+            rowsValues.add(currentValue);
 				listAdapter.add(currentValue);
 			//	getRowsValues().add(currentValue);
 			//}
@@ -75,11 +76,11 @@ public class GUIMaker {
 		this.cursor = cursor;
 	}
 
-    public ArrayList<String> getRowsValues() {
+    public ArrayList<Mapper> getRowsValues() {
         return rowsValues;
     }
 
-    public void setRowsValues(ArrayList<String> rowsValues) {
+    public void setRowsValues(ArrayList<Mapper> rowsValues) {
         this.rowsValues = rowsValues;
     }
 }
