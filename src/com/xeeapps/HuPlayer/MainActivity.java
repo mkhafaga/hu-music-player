@@ -1,13 +1,13 @@
-package com.xeeapps.AmPlayer;
+package com.xeeapps.HuPlayer;
 
+import android.app.AlertDialog;
 import android.app.TabActivity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.KeyEvent;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
+import android.view.*;
 import android.widget.TabHost;
+import android.widget.TextView;
+import android.widget.Toast;
 
 public class MainActivity extends TabActivity {
 	/**
@@ -33,14 +33,38 @@ public class MainActivity extends TabActivity {
         if(item.getItemId()==R.id.bringPlayer){
 
             Intent playerIntent = new Intent(this,PlayerActivity.class) ;
-            playerIntent.setAction("recover");
+          if(!Globals.NEVER_PLAYED){
+              playerIntent.setAction("recover");
 //            playerIntent.putExtra("albumArtPath", Globals.ALBUM_ART_PATH) ;    // songsCursor.getPosition()
 //            playerIntent.putExtra("currentSongDetails", Globals.CURRENT_SONG_DETAILS);
 //            playerIntent.putExtra("currentSongIndex",Globals.CURRENT_SONG_INDEX);
 //            playerIntent.putExtra("songDetailsList", Globals.SONG_DETAILS_LIST);
-            startActivity(playerIntent);
+              startActivity(playerIntent);
+          }else{
+              Toast.makeText(this,"You should play a song first",Toast.LENGTH_SHORT).show();
+
+          }
+
             return true;
         }else if(item.getItemId()==R.id.about){
+            TextView myMsg = new TextView(this);
+            myMsg.setText("This is a lightweight Music Player with lyrics.\nHu Player ©");
+            myMsg.setGravity(Gravity.CENTER_HORIZONTAL);
+            new AlertDialog.Builder(this)
+                    .setTitle("About")
+                    .setView(myMsg)
+//                    .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+//                        public void onClick(DialogInterface dialog, int which) {
+//                            // continue with delete
+//                        }
+//                    })
+//                    .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+//                        public void onClick(DialogInterface dialog, int which) {
+//                            // do nothing
+//                        }
+//                    }
+//                    )
+                    .show();
             return  true;
         }else return  super.onOptionsItemSelected(item);
     }
@@ -52,7 +76,6 @@ public class MainActivity extends TabActivity {
 		setContentView(R.layout.main);
 		TabHost tabHost = getTabHost();
 		Bundle extras = getIntent().getExtras();
-
 		if (extras != null) {
 			tabsList = (String[]) extras.get("tabsList");
 			albumsSelection = extras.getString("albumsSelection");
@@ -152,12 +175,12 @@ public class MainActivity extends TabActivity {
 			spec4.setContent(songsIntent);
 			tabHost.addTab(spec4);
 			//
-			TabHost.TabSpec spec5 = tabHost.newTabSpec("Genres");
-			spec5.setIndicator("Genres",
-					getResources().getDrawable(R.drawable.genre));
-			Intent genresIntent = new Intent(this, GenresActivity.class);
-			spec5.setContent(genresIntent);
-			tabHost.addTab(spec5);
+//			TabHost.TabSpec spec5 = tabHost.newTabSpec("Genres");
+//			spec5.setIndicator("Genres",
+//					getResources().getDrawable(R.drawable.genre));
+//			Intent genresIntent = new Intent(this, GenresActivity.class);
+//			spec5.setContent(genresIntent);
+//			tabHost.addTab(spec5);
 			//
 //			TabHost.TabSpec spec6 = tabHost.newTabSpec("Composers");
 //			spec6.setIndicator("Composers",
