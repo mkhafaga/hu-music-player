@@ -1,4 +1,4 @@
-package com.xeeapps.AmPlayer;
+package com.xeeapps.HuPlayer;
 
 import android.app.Activity;
 import android.content.*;
@@ -8,6 +8,9 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.webkit.WebView;
 import android.widget.ImageButton;
@@ -27,8 +30,8 @@ public class PlayerActivity extends Activity implements
     private ImageButton playPauseButton, nextButton, previousButton,
             stopButton, repeatButton, shuffleButton;
     private int currentSongPosition;
-  //  private String currentRepeatState = Globals.REPEAT_NONE;
-  //  private String currentShuffleState = Globals.SHUFFLE_OFF;
+    //  private String currentRepeatState = Globals.REPEAT_NONE;
+    //  private String currentShuffleState = Globals.SHUFFLE_OFF;
     private Handler handler = new Handler();
     private SeekBar progressBar;
     //	private Cursor songsCursor;
@@ -36,24 +39,24 @@ public class PlayerActivity extends Activity implements
     private TextView leftDurationLbl, playedDurationLbl;
     private WebView lyricsView;
     private TextView titleView;
-    private String lyricsWords="";
+    private String lyricsWords = "";
     private Intent serviceIntent;
     //    private int shuffleCounter;
     private Bundle bundle;
     private Object[] songDetailsList;
     private int currentSongIndex;
- //   private String songState = Globals.RUNNING_SONG;
+    //   private String songState = Globals.RUNNING_SONG;
     private SongDetails currentSongDetails;
     private String albumArtPath;
     //private Document doc;
-    private  BroadcastReceiver accomplishedBroadcastReceiver = new BroadcastReceiver() {
+    private BroadcastReceiver accomplishedBroadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
 //            Toast.makeText(context, "Intent Detected.", Toast.LENGTH_LONG).show();
             playPauseButton.setImageResource(R.drawable.playerplay);
             titleView.setText(service.getCurrentSongDetails().getSongTitle());
         }
-    }       ;
+    };
 //    public class MyReceiver extends BroadcastReceiver {
 //
 //        public MyReceiver(){
@@ -92,9 +95,14 @@ public class PlayerActivity extends Activity implements
         public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
             MusicPlayerService.MusicPlayerBinder binder = (MusicPlayerService.MusicPlayerBinder) iBinder;
             service = binder.getService();
+            Globals.NEVER_PLAYED = false;
             updateRepeatButton();
             updateShuffleButton();
+            if (!service.getSongState().equals(Globals.RUNNING_SONG))
+                playPauseButton.setImageResource(R.drawable.playerplay);
+
             updateProgressBar();
+            titleView.setText(service.getCurrentSongDetails().getSongTitle());
             updateLyricsView();
         }
 
@@ -104,6 +112,31 @@ public class PlayerActivity extends Activity implements
         }
     };
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.playeroptionsmenu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.lyricson) {
+            if (item.isChecked()) {
+                item.setChecked(false);
+                service.setLyricsOn(false);
+                lyricsView.loadDataWithBaseURL(null, "", "text/html", "UTF-8", null);
+            } else {
+                item.setChecked(true);
+                service.setLyricsOn(true);
+                updateLyricsView();
+            }
+
+
+        }
+        return true;
+    }
+
     public void onCreate(Bundle savedInstanceState) {
 
 
@@ -111,7 +144,7 @@ public class PlayerActivity extends Activity implements
 
         bundle = getIntent().getExtras();
         if (bundle != null) {
-            albumArtPath  /*= Globals.ALBUM_ART_PATH */ = bundle.getString("albumArtPath");
+            albumArtPath  = Globals.ALBUMART_PATH = bundle.getString("albumArtPath");
 
             songDetailsList /*= Globals.SONG_DETAILS_LIST*/ = (Object[]) bundle.getSerializable("songDetailsList");
             setCurrentSongDetails((SongDetails) bundle.get("currentSongDetails"));
@@ -120,7 +153,7 @@ public class PlayerActivity extends Activity implements
         setContentView(R.layout.player);
 
         serviceIntent = new Intent(this, MusicPlayerService.class);
-        if(!getIntent().getAction().equals("recover")){
+        if (!getIntent().getAction().equals("recover")) {
             serviceIntent.putExtra("song", getCurrentSongDetails().getSongData());
             serviceIntent.putExtra("currentSongDetails", getCurrentSongDetails());
             serviceIntent.putExtra("currentSongIndex", currentSongIndex);
@@ -128,7 +161,7 @@ public class PlayerActivity extends Activity implements
             startService(serviceIntent);
         }
 
-        bindService(serviceIntent, mConnection, Context.BIND_NOT_FOREGROUND);
+        bindService(serviceIntent, mConnection, Context.BIND_AUTO_CREATE);
 //        currentRepeatState =  Globals.CURRENT_REPEAT_STATE;
 //        currentShuffleState = Globals.CURRENT_SHUFFLE_STATE;
 
@@ -138,7 +171,13 @@ public class PlayerActivity extends Activity implements
         repeatButton = (ImageButton) findViewById(R.id.repeatButton);
 
         lyricsView = (WebView) findViewById(R.id.webView);
-        Drawable background = Drawable.createFromPath(albumArtPath);
+        Drawable background = null;
+        if (albumArtPath!=null){
+             background   = Drawable.createFromPath(albumArtPath);
+        }else{
+            background   = Drawable.createFromPath(Globals.ALBUMART_PATH);
+        }
+
         lyricsView.setBackgroundColor(0);
         lyricsView.setBackgroundDrawable(background);
         titleView = (TextView) findViewById(R.id.titleView);
@@ -157,8 +196,8 @@ public class PlayerActivity extends Activity implements
         playPauseButton.setOnClickListener(this);
         shuffleButton.setOnClickListener(this);
         repeatButton.setOnClickListener(this);
-        IntentFilter intentFilter = new IntentFilter("accomplished") ;
-        registerReceiver(accomplishedBroadcastReceiver,intentFilter);
+        IntentFilter intentFilter = new IntentFilter("accomplished");
+        registerReceiver(accomplishedBroadcastReceiver, intentFilter);
     }
 
     private void updateShuffleButton() {
@@ -256,19 +295,22 @@ public class PlayerActivity extends Activity implements
     }
 
     public boolean updateLyricsView() {
-
-        lyricsWords = "Some Error";
+        if(service.isLyricsOn()){
+            lyricsWords = "Some Error";
 
 
 //            Log.i("song - artist", songName + " - " + artistName);
 //            Log.i("link", "http://hulyrics.com/LyricsService/webresources/service/getLyricBySongCriteria?title=" + songName + "&artistName=" + artistName);
 //            Log.i("artist:");
-           new GetLyricsTask(lyricsView).execute(service.getCurrentSongDetails());
-         //   lyricsWords = new GetLyricsTask().execute(songName, artistName).get();
+            new GetLyricsTask(lyricsView).execute(service.getCurrentSongDetails());
+            //   lyricsWords = new GetLyricsTask().execute(songName, artistName).get();
 
-        //    lyricsView.loadDataWithBaseURL(null, lyricsWords, "text/html", "UTF-8", null);
-        //    Log.i("words", lyricsWords);
+            //    lyricsView.loadDataWithBaseURL(null, lyricsWords, "text/html", "UTF-8", null);
+            //    Log.i("words", lyricsWords);
 //            Log.i("the lyric:",lyricsWords);
+
+
+        }
 
         return true;
     }
@@ -284,7 +326,7 @@ public class PlayerActivity extends Activity implements
                 playPauseButton
                         .setImageResource(R.drawable.playerpause);
                 service.resume(service.getCurrentPosition());
-             //   songState = Globals.RUNNING_SONG;
+                //   songState = Globals.RUNNING_SONG;
             } else if (service.getSongState().equals(Globals.RUNNING_SONG)) {
                 playPauseButton
                         .setImageResource(R.drawable.playerplay);
@@ -293,7 +335,7 @@ public class PlayerActivity extends Activity implements
 //                unbindService(mConnection);
 //                stopService(serviceIntent);
                 service.pause();
-            //    songState = Globals.PAUSED_SONG;
+                //    songState = Globals.PAUSED_SONG;
             } else {
                 playPauseButton
                         .setImageResource(R.drawable.playerpause);
@@ -305,8 +347,7 @@ public class PlayerActivity extends Activity implements
 //                serviceIntent.putExtra("songDetailsList", songDetailsList);
 //                startService(serviceIntent);
 //                bindService(serviceIntent, mConnection, Context.BIND_NOT_FOREGROUND);
-               service.playSong();
-
+                service.playSong();
 
 
             }
@@ -322,37 +363,37 @@ public class PlayerActivity extends Activity implements
         } else if (button.getId() == R.id.nextButton) {
             service.next();
             playPauseButton.setImageResource(R.drawable.playerpause);
-          //  songState = Globals.RUNNING_SONG;
+            //  songState = Globals.RUNNING_SONG;
             service.setSongState(Globals.RUNNING_SONG);
             titleView.setText(service.getCurrentSongDetails().getSongTitle());
-                 updateLyricsView();
+            updateLyricsView();
 
-        }  else if(button.getId()==R.id.repeatButton){
-            if(service.getRepeatState().equals(Globals.REPEAT_NONE)){
+        } else if (button.getId() == R.id.repeatButton) {
+            if (service.getRepeatState().equals(Globals.REPEAT_NONE)) {
                 service.setRepeatState(Globals.REPEAT_CURRENT);
                 service.setShuffleState(Globals.SHUFFLE_OFF);
                 shuffleButton.setImageResource(R.drawable.shuffleoff);
                 repeatButton.setImageResource(R.drawable.repeatcurrent);
                 service.setLooping(true);
 
-            } else if(service.getRepeatState().equals(Globals.REPEAT_CURRENT)){
+            } else if (service.getRepeatState().equals(Globals.REPEAT_CURRENT)) {
                 service.setLooping(false);
-                service.setRepeatState( Globals.REPEAT_ALL);
+                service.setRepeatState(Globals.REPEAT_ALL);
                 repeatButton.setImageResource(R.drawable.repeatall);
-            } else{
+            } else {
                 service.setLooping(false);
-               service.setRepeatState(Globals.REPEAT_NONE);
+                service.setRepeatState(Globals.REPEAT_NONE);
                 repeatButton.setImageResource(R.drawable.repeatnone);
                 service.setShuffleState(Globals.SHUFFLE_OFF);
                 shuffleButton.setImageResource(R.drawable.shuffleoff);
             }
-        }else{
-            if(service.getShuffleState().equals(Globals.SHUFFLE_OFF)){
-                service.setShuffleState(Globals.SHUFFLE_ON) ;
+        } else {
+            if (service.getShuffleState().equals(Globals.SHUFFLE_OFF)) {
+                service.setShuffleState(Globals.SHUFFLE_ON);
                 shuffleButton.setImageResource(R.drawable.shuffleon);
                 repeatButton.setImageResource(R.drawable.repeatall);
                 service.setRepeatState(Globals.REPEAT_ALL);
-            }else{
+            } else {
                 service.setShuffleState(Globals.SHUFFLE_OFF);
                 shuffleButton.setImageResource(R.drawable.shuffleoff);
             }
