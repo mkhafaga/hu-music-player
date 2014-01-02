@@ -1,4 +1,4 @@
-package com.xeeapps.AmPlayer;
+package com.xeeapps.HuPlayer;
 
 import android.media.MediaPlayer;
 
