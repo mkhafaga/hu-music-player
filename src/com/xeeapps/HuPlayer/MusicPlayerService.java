@@ -1,6 +1,7 @@
-package com.xeeapps.AmPlayer;
+package com.xeeapps.HuPlayer;
 
 import android.app.Notification;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
@@ -26,12 +27,12 @@ public class MusicPlayerService extends Service implements MediaPlayer.OnComplet
     private final Binder binder =  new MusicPlayerBinder();
     private Object[] songDetailsList;
     private int currentSongIndex;
-
+    private boolean lyricsOn=false;
     private String songState=Globals.RUNNING_SONG;
     private String shuffleState =  Globals.SHUFFLE_OFF;
     private String repeatState = Globals.REPEAT_NONE;
-
-
+     private  Notification notification;
+     private PendingIntent pendingIntent;
 
 
     private SongDetails currentSongDetails;
@@ -86,6 +87,14 @@ public class MusicPlayerService extends Service implements MediaPlayer.OnComplet
         this.shuffleState = shuffleState;
     }
 
+    public boolean isLyricsOn() {
+        return lyricsOn;
+    }
+
+    public void setLyricsOn(boolean lyricsOn) {
+        this.lyricsOn = lyricsOn;
+    }
+
 //    public String getStatus() {
 //        return status;
 //    }
@@ -115,20 +124,27 @@ public class MusicPlayerService extends Service implements MediaPlayer.OnComplet
             setCurrentSongDetails((SongDetails) bundle.get("currentSongDetails"));
             currentSongIndex =   bundle.getInt("currentSongIndex");
 
+            Intent notificationIntent = new Intent(this, PlayerActivity.class);
+            notificationIntent.setAction("recover");
+            pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+            notification = new Notification.Builder(this).setContentTitle("Hu Player").setContentText(getCurrentSongDetails().getSongTitle()).setContentIntent(pendingIntent).setSmallIcon(R.drawable.appicon).getNotification();
+//        notification.setLatestEventInfo(this, "",
+//              "", pendingIntent);
 
+//        NotificationManager notificationManager =
+//                (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+
+            //   notificationManager.notify(0, notification);
+            startForeground(123, notification);
                     playSong();
+
 
         }
 
-        Notification notification = new Notification(R.drawable.appicon,"",
-                System.currentTimeMillis());
-        Intent notificationIntent = new Intent(this, PlayerActivity.class);
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
-        notification.setLatestEventInfo(this, "",
-              "", pendingIntent);
+         //new Notification(R.drawable.appicon,currentSongDetails.getSongTitle(),System.currentTimeMillis());
 
-        startForeground(123, notification);
 
+        //NotificationManager
         return 0;
     }
 
@@ -148,6 +164,7 @@ public class MusicPlayerService extends Service implements MediaPlayer.OnComplet
 
     @Override
     public void onCompletion(MediaPlayer mediaPlayer) {
+
         Log.i("does it come here???", "yes");
        // if (songDetailsList==null) songDetailsList = Globals.SONG_DETAILS_LIST;
        // currentSongIndex =  Globals.CURRENT_SONG_INDEX;
@@ -212,6 +229,8 @@ public class MusicPlayerService extends Service implements MediaPlayer.OnComplet
 //        Globals.CURRENT_SONG_INDEX =  currentSongIndex;
 //        Globals.CURRENT_SONG_DETAILS =  currentSongDetails;
 //        Globals.CURRENT_SONG =  currentSongDetails.getSongTitle();
+
+
     }
 
 
@@ -245,8 +264,13 @@ public class MusicPlayerService extends Service implements MediaPlayer.OnComplet
                 }
 
 //        playerThread.start();
+        notification.setLatestEventInfo(this,"Hu Player",getCurrentSongDetails().getSongTitle(),pendingIntent);
+        NotificationManager notificationManager =
+                (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 
+        notificationManager.notify(123, notification);
 
+        Globals.CURRENT_SONGDETAILS = getCurrentSongDetails();
             }
 
 
