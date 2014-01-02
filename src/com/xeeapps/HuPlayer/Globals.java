@@ -1,4 +1,6 @@
-package com.xeeapps.AmPlayer;
+package com.xeeapps.HuPlayer;
+
+import com.xeeapps.service.SongDetails;
 
 /**
  * Created with IntelliJ IDEA.
@@ -15,7 +17,10 @@ public class Globals {
    // public static String ALBUM_ART_PATH  = "";
   //  public static  Object[] SONG_DETAILS_LIST =null;
    // public static SongDetails CURRENT_SONG_DETAILS = null;
- //   public static Integer CURRENT_SONG_INDEX = null;
+ //   public static Integer CURRENT_SONG_INDEX = null;   44
+    public static boolean NEVER_PLAYED =  true;
+    public static String ALBUMART_PATH=null;
+    public static SongDetails CURRENT_SONGDETAILS=null;
     public static String REPEAT_ALL="repeatAll";
     public static String REPEAT_CURRENT="repeatCurrent";
     public static String REPEAT_NONE="repeatNone";
