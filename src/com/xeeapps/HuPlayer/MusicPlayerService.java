@@ -127,7 +127,9 @@ public class MusicPlayerService extends Service implements MediaPlayer.OnComplet
             Intent notificationIntent = new Intent(this, PlayerActivity.class);
             notificationIntent.setAction("recover");
             pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
-            notification = new Notification.Builder(this).setContentTitle("Hu Player").setContentText(getCurrentSongDetails().getSongTitle()).setContentIntent(pendingIntent).setSmallIcon(R.drawable.appicon).getNotification();
+            notification = new Notification(R.drawable.appicon,"",System.currentTimeMillis());
+            notification.setLatestEventInfo(this,"Hu Music Player",getCurrentSongDetails().getSongTitle()+" - "+getCurrentSongDetails().getArtistName(),pendingIntent);
+          //  notification = new Notification.Builder(this).setContentTitle("Hu Player").setContentText(getCurrentSongDetails().getSongTitle()).setContentIntent(pendingIntent).setSmallIcon(R.drawable.appicon).getNotification();
 //        notification.setLatestEventInfo(this, "",
 //              "", pendingIntent);
 
@@ -191,9 +193,9 @@ public class MusicPlayerService extends Service implements MediaPlayer.OnComplet
                 player.seekTo(0);
                 player.stop();
              //   player.reset();
-                Intent accomplishedIntent = new Intent();
-                accomplishedIntent.setAction("accomplished");
-                sendBroadcast(accomplishedIntent);
+//                Intent accomplishedIntent = new Intent();
+//                accomplishedIntent.setAction("accomplished");
+//                sendBroadcast(accomplishedIntent);
                 setCurrentSongDetails((SongDetails) songDetailsList[0]);
 
              //   stopSelf();
@@ -230,7 +232,9 @@ public class MusicPlayerService extends Service implements MediaPlayer.OnComplet
 //        Globals.CURRENT_SONG_DETAILS =  currentSongDetails;
 //        Globals.CURRENT_SONG =  currentSongDetails.getSongTitle();
 
-
+        Intent accomplishedIntent = new Intent();
+        accomplishedIntent.setAction("accomplished");
+        sendBroadcast(accomplishedIntent);
     }
 
 
@@ -264,6 +268,7 @@ public class MusicPlayerService extends Service implements MediaPlayer.OnComplet
                 }
 
 //        playerThread.start();
+        notification = new Notification(R.drawable.appicon,"",System.currentTimeMillis());
         notification.setLatestEventInfo(this,"Hu Player",getCurrentSongDetails().getSongTitle(),pendingIntent);
         NotificationManager notificationManager =
                 (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
