@@ -184,6 +184,9 @@ public class MusicPlayerService extends Service implements MediaPlayer.OnComplet
                 //playPauseButton.setImageResource(R.drawable.playerpause);
 
                // updateLyricsView();
+                Intent accomplishedIntent = new Intent();
+                accomplishedIntent.setAction("accomplished");
+                sendBroadcast(accomplishedIntent);
             }else{
                 currentSongIndex =0;
 
@@ -192,16 +195,19 @@ public class MusicPlayerService extends Service implements MediaPlayer.OnComplet
                 //titleView.setText(currentSongDetails.getSongTitle());
                 player.seekTo(0);
                 player.stop();
+                Intent accomplishedIntent = new Intent();
+                accomplishedIntent.setAction("allAccomplished");
+                Globals.CURRENT_SONGDETAILS = getCurrentSongDetails();
+                sendBroadcast(accomplishedIntent);
              //   player.reset();
-//                Intent accomplishedIntent = new Intent();
-//                accomplishedIntent.setAction("accomplished");
-//                sendBroadcast(accomplishedIntent);
-                setCurrentSongDetails((SongDetails) songDetailsList[0]);
+
+             //   setCurrentSongDetails((SongDetails) songDetailsList[0]);
 
              //   stopSelf();
 //                updateProgressBar();
 //                updateLyricsView();
             }
+
 
         }else{
             if(repeatState.equals(Globals.REPEAT_ALL)){
@@ -222,6 +228,9 @@ public class MusicPlayerService extends Service implements MediaPlayer.OnComplet
                 setSongState(Globals.RUNNING_SONG);
 
                         playSong();
+                Intent accomplishedIntent = new Intent();
+                accomplishedIntent.setAction("accomplished");
+                sendBroadcast(accomplishedIntent);
 
              //   playPauseButton.setImageResource(R.drawable.playerpause);
 
@@ -232,9 +241,9 @@ public class MusicPlayerService extends Service implements MediaPlayer.OnComplet
 //        Globals.CURRENT_SONG_DETAILS =  currentSongDetails;
 //        Globals.CURRENT_SONG =  currentSongDetails.getSongTitle();
 
-        Intent accomplishedIntent = new Intent();
-        accomplishedIntent.setAction("accomplished");
-        sendBroadcast(accomplishedIntent);
+//        Intent accomplishedIntent = new Intent();
+//        accomplishedIntent.setAction("accomplished");
+//        sendBroadcast(accomplishedIntent);
     }
 
 

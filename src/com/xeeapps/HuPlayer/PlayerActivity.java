@@ -1,23 +1,23 @@
 package com.xeeapps.HuPlayer;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.*;
 import android.content.res.Configuration;
+import android.database.Cursor;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.provider.MediaStore;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
-import android.view.View;
+import android.view.*;
 import android.webkit.WebView;
-import android.widget.ImageButton;
-import android.widget.SeekBar;
-import android.widget.TextView;
+import android.widget.*;
+import com.xeeapps.mappers.Mapper;
 import com.xeeapps.service.SongDetails;
 import com.xeeapps.utils.GetLyricsTask;
+import com.xeeapps.utils.PlaylistUtils;
 import com.xeeapps.utils.TimeFormatter;
 
 /**
@@ -48,13 +48,24 @@ public class PlayerActivity extends Activity implements
     //   private String songState = Globals.RUNNING_SONG;
     private SongDetails currentSongDetails;
     private String albumArtPath;
+    private ArrayAdapter<Mapper> listAdapter;
+
     //private Document doc;
     private BroadcastReceiver accomplishedBroadcastReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
 //            Toast.makeText(context, "Intent Detected.", Toast.LENGTH_LONG).show();
-            playPauseButton.setImageResource(R.drawable.playerplay);
-            titleView.setText(service.getCurrentSongDetails().getSongTitle());
+            Log.i("::::","it comes here");
+            if(intent.getAction().equals("accomplished")){
+              //  playPauseButton.setImageResource(R.drawable.playerplay);
+                titleView.setText(service.getCurrentSongDetails().getSongTitle());
+                Log.i("::::","weird");
+            }else {
+                Log.i("::::","accomplishedAll");
+                playPauseButton.setImageResource(R.drawable.playerplay);
+                titleView.setText(service.getCurrentSongDetails().getSongTitle());
+            }
+
         }
     };
 //    public class MyReceiver extends BroadcastReceiver {
@@ -112,6 +123,8 @@ public class PlayerActivity extends Activity implements
         }
     };
 
+
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
@@ -121,6 +134,7 @@ public class PlayerActivity extends Activity implements
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+
         if (item.getItemId() == R.id.lyricson) {
             if (item.isChecked()) {
                 item.setChecked(false);
@@ -133,6 +147,84 @@ public class PlayerActivity extends Activity implements
             }
 
 
+        }else{
+//            TextView myMsg = new TextView(this);
+            listAdapter = new ArrayAdapter<Mapper>(
+                    this, R.layout.playlists_row_new,R.id.playlistsrow_new);
+            Cursor cursor =managedQuery(MediaStore.Audio.Playlists.EXTERNAL_CONTENT_URI, new String[]{MediaStore.Audio.Playlists.NAME,MediaStore.Audio.Playlists.Members._ID}, null,
+                    null, null);
+
+            int rowsCount = cursor.getCount();
+            Log.i("cursor size: ", ""+rowsCount) ;
+            cursor.moveToFirst();
+            for (int i = 0; i < rowsCount; i++) {
+                cursor.moveToPosition(i);
+                Mapper currentValue =new Mapper( cursor.getString(0),cursor.getInt(1));
+                //	if (getRowsValues().indexOf(currentValue) == -1) {
+               // rowsValues.add(currentValue);
+                listAdapter.add(currentValue);
+                //	getRowsValues().add(currentValue);
+                //}
+            }
+
+
+
+          //  ListView playlistsPopupView = (ListView) findViewById(R.id.playlistpopup);
+        //    playlistsPopupView.setAdapter(listAdapter);
+//            myMsg.setText("This is a lightweight Music Player with lyrics.\nHu Player ©");
+//            myMsg.setGravity(Gravity.CENTER_HORIZONTAL);
+
+            new AlertDialog.Builder(this)
+                    .setTitle("Add to")
+                 //   .setView(playlistsPopupView)
+                    .setAdapter(listAdapter, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            PlaylistUtils.addToPlaylist(getContentResolver(), getCurrentSongDetails(), listAdapter.getItem(i).getId());
+                        }
+                    })
+                    .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            //To change body of implemented methods use File | Settings | File Templates.
+                        }
+                    }).setPositiveButton("New Playlist",new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                     LinearLayout newPlaylistLayout = (LinearLayout) findViewById(R.layout.newplaylist);
+                //    TextView textView = new TextView(PlayerActivity.this);
+                    LayoutInflater inflater = PlayerActivity.this.getLayoutInflater();
+                   final View playlistDialog =     inflater.inflate(R.layout.newplaylist, null);
+
+                 new AlertDialog.Builder(PlayerActivity.this).setTitle("Create Playlist").setView(playlistDialog).setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                     @Override
+                     public void onClick(DialogInterface dialogInterface, int i) {
+                         //To change body of implemented methods use File | Settings | File Templates.
+                     }
+                 }).setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                     @Override
+                     public void onClick(DialogInterface dialogInterface, int i) {
+                        EditText playlistEditText = (EditText) playlistDialog.findViewById(R.id.playlistEditText);
+
+                      Log.i("dialog:",playlistEditText.toString());
+                        int playlistId =  PlaylistUtils.createPlaylist(PlayerActivity.this.getContentResolver(),playlistEditText.getText().toString());
+                          PlaylistUtils.addToPlaylist(getContentResolver(),currentSongDetails,playlistId);
+                     }
+                 }).show();
+                }
+            })
+//                    .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+//                        public void onClick(DialogInterface dialog, int which) {
+//                            // continue with delete
+//                        }
+//                    })
+//                    .setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+//                        public void onClick(DialogInterface dialog, int which) {
+//                            // do nothing
+//                        }
+//                    }
+//                    )
+                    .show();
         }
         return true;
     }
@@ -197,7 +289,9 @@ public class PlayerActivity extends Activity implements
         shuffleButton.setOnClickListener(this);
         repeatButton.setOnClickListener(this);
         IntentFilter intentFilter = new IntentFilter("accomplished");
+        IntentFilter accomplishedAllFilter = new IntentFilter("allAccomplished");
         registerReceiver(accomplishedBroadcastReceiver, intentFilter);
+        registerReceiver(accomplishedBroadcastReceiver, accomplishedAllFilter);
     }
 
     private void updateShuffleButton() {

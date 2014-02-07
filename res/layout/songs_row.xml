@@ -20,6 +20,7 @@
              android:height="60dp"
              android:gravity="center_vertical"
              android:layout_centerHorizontal="true" android:layout_alignParentTop="true"
+             android:textColor="@color/black"
              android:layout_alignParentLeft="false" android:layout_weight=".70"/>
 
 

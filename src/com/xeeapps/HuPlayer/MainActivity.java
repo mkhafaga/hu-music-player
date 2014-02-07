@@ -24,7 +24,7 @@ public class MainActivity extends TabActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.optionsmenu, menu);
+        inflater.inflate(R.menu.mainoptionsmenu, menu);
         return true;
     }
 
@@ -148,29 +148,33 @@ public class MainActivity extends TabActivity {
 
 		} else {
 			TabHost.TabSpec spec1 = tabHost.newTabSpec("Artists");
-			spec1.setIndicator("Artists",
-					getResources().getDrawable(R.drawable.artist));
+//			spec1.setIndicator("Artists",
+//					getResources().getDrawable(R.drawable.artist));
+            spec1.setIndicator("Artists");
 			Intent artistsIntent = new Intent(this, ArtistsActivity.class);
 			spec1.setContent(artistsIntent);
 			tabHost.addTab(spec1);
 //			//
 			TabHost.TabSpec spec2 = tabHost.newTabSpec("Playlists");
-			spec2.setIndicator("Playlists",
-					getResources().getDrawable(R.drawable.playlist));
+//			spec2.setIndicator("Playlists",
+//					getResources().getDrawable(R.drawable.playlist));
+            spec2.setIndicator("Playlists");
 			Intent playlistsIntent = new Intent(this, PlaylistsActivity.class);
 			spec2.setContent(playlistsIntent);
 			tabHost.addTab(spec2);
 			//
 			TabHost.TabSpec spec3 = tabHost.newTabSpec("Albums");
-			spec3.setIndicator("Albums",
-					getResources().getDrawable(R.drawable.album));
+//			spec3.setIndicator("Albums",
+//					getResources().getDrawable(R.drawable.album));
+            spec3.setIndicator("Albums");
 			Intent albumsIntent = new Intent(this, AlbumsActivity.class);
 			spec3.setContent(albumsIntent);
 			tabHost.addTab(spec3);
 			//
 			TabHost.TabSpec spec4 = tabHost.newTabSpec("Songs");
-			spec4.setIndicator("Songs",
-					getResources().getDrawable(R.drawable.song));
+//			spec4.setIndicator("Songs",
+//					getResources().getDrawable(R.drawable.song));
+            spec4.setIndicator("Songs") ;
 			Intent songsIntent = new Intent(this, SongsActivity.class);
 			spec4.setContent(songsIntent);
 			tabHost.addTab(spec4);

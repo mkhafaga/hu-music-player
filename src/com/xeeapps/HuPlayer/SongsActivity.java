@@ -9,7 +9,10 @@ import android.provider.MediaStore;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.View;
-import android.widget.*;
+import android.widget.AbsListView;
+import android.widget.AdapterView;
+import android.widget.EditText;
+import android.widget.ListView;
 import com.xeeapps.mappers.Mapper;
 import com.xeeapps.service.SongDetails;
 
@@ -71,9 +74,18 @@ public class SongsActivity extends ListActivity {
             if(playlistId!=null){
 //                MediaStore.Audio.Media.DISPLAY_NAME,
 //                        MediaStore.Audio.Media.DATA, MediaStore.Audio.Media._ID,MediaStore.Audio.Media.ARTIST};
-                proj = new String[] {MediaStore.Audio.Playlists.Members.DISPLAY_NAME,MediaStore.Audio.Playlists.Members.DATA,MediaStore.Audio.Playlists.Members._ID,MediaStore.Audio.Playlists.Members.ARTIST};
+               // proj = new String[] {MediaStore.Audio.Playlists.Members.DISPLAY_NAME,MediaStore.Audio.Playlists.Members.DATA,MediaStore.Audio.Playlists.Members._ID,MediaStore.Audio.Playlists.Members.ARTIST};
                 songsUri = MediaStore.Audio.Playlists.Members.getContentUri("external",playlistId);
+             //   Log.i("tacks cursor size: ",PlaylistUtils.getTrackListFromPlaylist(getContentResolver(),playlistId).getInt(0)+"");
+                String[] MEDIA_COLUMNS = new String[] {
+                        "count(*)"
+                };
+                Cursor cur2 =getContentResolver().query(songsUri,
+                        MEDIA_COLUMNS, null, null, null);
+                cur2.moveToFirst();
 
+
+                Log.i("tacks cursor size: " ,cur2.getInt(0)+" - "+playlistId);
 
             }
 
@@ -94,7 +106,7 @@ public class SongsActivity extends ListActivity {
            Log.i("1-",songsCursor.getString(1)) ;
            Log.i("0-",songsCursor.getString(0)) ;
            Log.i("3-",songsCursor.getString(3)) ;
-           songDetailsList[i] = new SongDetails(songsCursor.getString(1),songsCursor.getString(0),songsCursor.getString(3));
+           songDetailsList[i] = new SongDetails(songsCursor.getInt(2),songsCursor.getString(1),songsCursor.getString(0),songsCursor.getString(3));
 //           songDetailsList[i].setSongData(songsCursor.getString(1)) ;
 //           songDetailsList[i].setArtistName(songsCursor.getString(3));
        }
@@ -146,7 +158,7 @@ public class SongsActivity extends ListActivity {
                  //   albumCursor.close();
                     // songsCursor.getPosition()
           //      }
-              SongDetails currentSongDetails = new SongDetails(songsCursor.getString(1),songsCursor.getString(0),songsCursor.getString(3));
+              SongDetails currentSongDetails = new SongDetails(songsCursor.getInt(2),songsCursor.getString(1),songsCursor.getString(0),songsCursor.getString(3));
                 if(Globals.CURRENT_SONGDETAILS!=null&&currentSongDetails.equals(Globals.CURRENT_SONGDETAILS)){
                 //    Intent playerIntent = new Intent(this,PlayerActivity.class) ;
 

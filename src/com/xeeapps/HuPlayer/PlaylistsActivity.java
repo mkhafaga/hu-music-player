@@ -74,7 +74,9 @@ public class PlaylistsActivity extends ListActivity {
                 Intent mainIntent = new Intent(getApplicationContext(), MainActivity.class);
                 mainIntent.putExtra("tabsList", new String[]{"Songs"});
 //               mainIntent.putExtra("songsSelection", MediaStore.Audio.Playlists._ID+"=?");
-                mainIntent.putExtra("playlistId",playlistsCursor.getInt(1));
+                int playlistId =  playlistsCursor.getInt(1);
+                mainIntent.putExtra("playlistId",playlistId);
+                Log.i("playlistId:",playlistId+"");
                // mainIntent.putExtra("songsArgs", new String[]{""+playlistsCursor.getInt(1)});
                 startActivity(mainIntent);
 

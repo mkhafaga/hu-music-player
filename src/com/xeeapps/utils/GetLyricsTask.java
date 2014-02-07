@@ -1,6 +1,7 @@
 package com.xeeapps.utils;
 
 import android.os.AsyncTask;
+import android.util.Log;
 import android.webkit.WebView;
 import com.xeeapps.service.SongDetails;
 import org.jsoup.Connection;
@@ -38,9 +39,10 @@ public class GetLyricsTask extends AsyncTask<SongDetails,WebView,String> {
         try {
         String[] songSlices = currentSongDetails[0].getSongData().split("/");
         String artistName = currentSongDetails[0].getArtistName().trim();
-            artistName =  URLEncoder.encode(artistName,"utf-8");
+
         String title = songSlices[songSlices.length - 1].replace(".mp3", "").replace(artistName, "").replaceAll("(.-)*[0-9]*", "").trim();
        title =  URLEncoder.encode(title, "utf-8");
+            artistName =  URLEncoder.encode(artistName,"utf-8");
 //                       String all = "";
 //        URL yahoo = null;
 //        try {
@@ -74,7 +76,7 @@ public class GetLyricsTask extends AsyncTask<SongDetails,WebView,String> {
 
 
             //"http://www.azlyrics.com/lyrics/enriqueiglesias/hero.html"
-
+            Log.i("serviceLink:","http://hulyrics.com/LyricsService/webresources/service/getLyricBySongCriteria?title="+ title+"&artistName="+ artistName);
             Connection connection =   Jsoup.connect("http://hulyrics.com/LyricsService/webresources/service/getLyricBySongCriteria?title="+ title+"&artistName="+ artistName);
             connection.timeout(60000);
             doc = connection.get();

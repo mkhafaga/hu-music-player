@@ -10,12 +10,14 @@ import java.io.Serializable;
  * To change this template use File | Settings | File Templates.
  */
 public class SongDetails implements Serializable {
+   private int id;
     private String songData;
     private String artistName;
     private String songTitle;
 
     public SongDetails(){}
-    public SongDetails(String songData,String songTitle, String artistName){
+    public SongDetails(int id,String songData,String songTitle, String artistName){
+        this.id =  id;
         this.songData = songData;
         this.artistName = artistName;
         this.songTitle = songTitle;
@@ -43,5 +45,20 @@ public class SongDetails implements Serializable {
 
     public void setSongTitle(String songTitle) {
         this.songTitle = songTitle;
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+      SongDetails comming = (SongDetails) o;
+       return  comming.getSongTitle().equals(this.getSongTitle())&&comming.getArtistName().equals(this.artistName);
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
     }
 }
