@@ -1,7 +1,6 @@
 package com.xeeapps.utils;
 
 import android.os.AsyncTask;
-import android.util.Log;
 import android.webkit.WebView;
 import com.xeeapps.service.SongDetails;
 import org.jsoup.Connection;
@@ -76,11 +75,14 @@ public class GetLyricsTask extends AsyncTask<SongDetails,WebView,String> {
 
 
             //"http://www.azlyrics.com/lyrics/enriqueiglesias/hero.html"
-            Log.i("serviceLink:","http://hulyrics.com/LyricsService/webresources/service/getLyricBySongCriteria?title="+ title+"&artistName="+ artistName);
-            Connection connection =   Jsoup.connect("http://hulyrics.com/LyricsService/webresources/service/getLyricBySongCriteria?title="+ title+"&artistName="+ artistName);
+//            Log.i("serviceLink:","http://hulyrics.com/LyricsService/webresources/service/getLyricBySongCriteria?title="+ title+"&artistName="+ artistName);
+//            Connection connection =   Jsoup.connect("http://hulyrics.com/LyricsService/webresources/service/getLyricBySongCriteria?title="+ title+"&artistName="+ artistName);
+         //   http://hulyrics.com/lyric.xhtml?song=Ladies&artist=ANDY+GRAMMER
+              Connection connection =   Jsoup.connect("http://hulyrics.com/lyric.xhtml?song="+ title+"&artist="+ artistName);
+
             connection.timeout(60000);
             doc = connection.get();
-            Elements lyrics = doc.getElementsByTag("words");
+            Elements lyrics = doc.getElementsByClass("ui-fieldset-content");
             System.out.println("divs size:"+lyrics.size());;
             Element elem  = lyrics.get(0);
              text =      elem.text();
@@ -95,20 +97,13 @@ public class GetLyricsTask extends AsyncTask<SongDetails,WebView,String> {
                     "      -1px 1px 0 #000,\n" +
                     "       1px 1px 0 #000;;font-weight:bolder;'>" + text + "</body>";
 
-            // lyricsView.setText(elem.text());
-            //  System.out.println("elem text:"+elem.text());
-            //   Thread.sleep(10000);
-            // System.out.println("doc title: "+doc.title());
+
         } catch (Exception e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
 
-//        LyricsClient lyricsClient = new LyricsClient();
-////        Lyric lyric = lyricsClient.getLyricBySongCriteria(urls[0],urls[1]);
-////        lyricsClient.close();
-//        return lyricsClient.getLyricBySongCriteria(urls[0],urls[1]).toString();//lyric.getWords();//+" - "+Globals.CURRENT_SONG;  //To change body of implemented methods use File | Settings | File Templates.
-                         return text;
+         return text;
     }
 
 }
